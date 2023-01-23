@@ -8,7 +8,7 @@ const ReportTypes = {
     TEST_REPORT: 'Test',
     PACKING_REPORT: 'Packing',
 }
-const URL = 'http://localhost:3001/api/v1/report/testReport'
+const URL = 'http://95.217.236.22:3001/api/v1/report/testReport'
 
 function App() {
     const {TextArea} = Input;
@@ -26,8 +26,6 @@ function App() {
         const maxTestId = val.maxTestId
         const minTestId = val.minTestId
         const status = val.status
-        console.log(startDate, endDate, '--------------')
-
 
         let dbQuery = undefined
         if (type === ReportTypes.TEST_REPORT) {
@@ -37,18 +35,32 @@ function App() {
             if (stationId && minTestId && maxTestId && startDate && endDate) {
                 dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND (testid BETWEEN ${minTestId} AND ${maxTestId}) ORDER BY timeinserted DESC`
             }
-            if (stationId && minTestId && maxTestId) {
+            else if (stationId && minTestId && maxTestId) {
                 dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND (testid BETWEEN ${minTestId} AND ${maxTestId}) AND timeinserted >'${startDate}' AND timeinserted <'${endDate}' ORDER BY timeinserted DESC`
+            }
+            else if (stationId && startDate && endDate && status) {
+                dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND timeinserted >'${startDate}' AND timeinserted <'${endDate}' AND results ='${status}' ORDER BY timeinserted DESC`
+            }
+            else if (stationId && startDate && endDate) {
+                dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND timeinserted >'${startDate}' AND timeinserted <'${endDate}' ORDER BY timeinserted DESC`
             }
 
         }
 
         if (dbQuery) {
             generateTestReport({query: dbQuery, email: email})
+        } else {
+            openError()
+            setLoading(false)
         }
     }
     const generateTestReport = (body) => {
-        axios.post(URL, body)
+        axios.post(URL, body, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json',
+            }
+        })
             .then(res => {
                 setLoading(false)
                 openSuccess()
@@ -172,7 +184,8 @@ function App() {
                                     name="startDate"
                                     // rules={[{required: true, message: 'Please input your Date!'}]}
                                 >
-                                    <DatePicker onChange={(date, dateString) => setStartDate(dateString)}  style={{width: '100%'}}/>
+                                    <DatePicker onChange={(date, dateString) => setStartDate(dateString)}
+                                                style={{width: '100%'}}/>
                                 </Form.Item>
                             </Col>
                             <Col span={11} offset={2}>
@@ -181,19 +194,24 @@ function App() {
                                     name="endDate"
                                     // rules={[{required: true, message: 'Please input your Date!'}]}
                                 >
-                                    <DatePicker onChange={(date, dateString) => setEndDate(dateString)} style={{width: '100%'}} />
+                                    <DatePicker onChange={(date, dateString) => setEndDate(dateString)}
+                                                style={{width: '100%'}}/>
                                 </Form.Item>
-                                {/*<Form.Item*/}
-                                {/*    label="Status"*/}
-                                {/*    name="status"*/}
-                                {/*    // rules={[{required: true, message: 'Please input your Status!'}]}*/}
-                                {/*>*/}
-                                {/*    <Select placeholder="Please select a Status">*/}
-                                {/*        <Option value="all">All</Option>*/}
-                                {/*        <Option value="passed">Passed</Option>*/}
-                                {/*        <Option value="failed">Failed</Option>*/}
-                                {/*    </Select>*/}
-                                {/*</Form.Item>*/}
+
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col span={11}>
+                                <Form.Item
+                                    label="Status"
+                                    name="status"
+                                    // rules={[{required: true, message: 'Please input your Status!'}]}
+                                >
+                                    <Select placeholder="Please select a Status" allowClear>
+                                        <Option value="PASSED">Passed</Option>
+                                        <Option value="FAILED">Failed</Option>
+                                    </Select>
+                                </Form.Item>
                             </Col>
                         </Row>
                         <Form.Item wrapperCol={{offset: 10, span: 3}} style={{marginTop: 20}}>
