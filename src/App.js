@@ -8,7 +8,7 @@ const ReportTypes = {
     TEST_REPORT: 'Test',
     PACKING_REPORT: 'Packing',
 }
-const URL = 'http://95.217.236.22:3001/api/v1/report/testReport'
+const URL = 'https://localhost:3002/api/v1/report/testReport'
 
 function App() {
     const {TextArea} = Input;
