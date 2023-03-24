@@ -4,11 +4,13 @@ import axios from "axios";
 import {useState} from "react";
 import moment from "moment";
 
+
+
 const ReportTypes = {
     TEST_REPORT: 'Test',
     PACKING_REPORT: 'Packing',
 }
-const URL = 'https://localhost:3002/api/v1/report/testReport'
+const URL = 'https://reportr.telebox.it/api/v1/report/testReport'
 
 function App() {
     const {TextArea} = Input;
@@ -33,11 +35,11 @@ function App() {
                 dbQuery = query
             }
             if (stationId && minTestId && maxTestId && startDate && endDate) {
-                dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND (testid BETWEEN ${minTestId} AND ${maxTestId}) ORDER BY timeinserted DESC`
-            }
-            else if (stationId && minTestId && maxTestId) {
                 dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND (testid BETWEEN ${minTestId} AND ${maxTestId}) AND timeinserted >'${startDate}' AND timeinserted <'${endDate}' ORDER BY timeinserted DESC`
             }
+            else if (stationId && minTestId && maxTestId) {
+                dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND (testid BETWEEN ${minTestId} AND ${maxTestId}) ORDER BY timeinserted DESC`
+                }
             else if (stationId && startDate && endDate && status) {
                 dbQuery = `SELECT * from tbl_device_serial_testing WHERE (station_id=${stationId}) AND timeinserted >'${startDate}' AND timeinserted <'${endDate}' AND results ='${status}' ORDER BY timeinserted DESC`
             }
@@ -59,7 +61,9 @@ function App() {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json',
-            }
+            }, rejectUnauthorized: false,//add when working with https sites
+            requestCert: false,//add when working with https sites
+            agent: false,//add when working with https sites
         })
             .then(res => {
                 setLoading(false)
